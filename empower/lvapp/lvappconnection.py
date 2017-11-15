@@ -266,6 +266,15 @@ class LVAPPConnection:
         wtp.last_seen = hello.seq
         wtp.last_seen_ts = time.time()
 
+    def _handle_wadrr_ttime(self, wtp, wadrr_ttime):
+
+        print(wadrr_ttime)
+
+        ssid = SSID(wadrr_ttime.ssid)
+
+        LOG.info("Transmission Time for tenant: %s WTP: %s ttime: %u seq %u", ssid, wtp.addr, wadrr_ttime.ttimes,
+                 wadrr_ttime.seq)
+
     def send_vaps(self):
         """Send VAPs configurations.
 
