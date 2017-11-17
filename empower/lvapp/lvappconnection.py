@@ -54,6 +54,9 @@ from empower.lvapp import PT_CAPS_REQUEST
 from empower.lvapp import PT_LVAP_STATUS_REQ
 from empower.lvapp import PT_VAP_STATUS_REQ
 from empower.lvapp import PT_PORT_STATUS_REQ
+from empower.lvapp import PT_WADRR_REQUEST
+from empower.lvapp import PT_WADRR_RESPONSE
+from empower.lvapp import WADRR_REQUEST
 from empower.core.lvap import LVAP
 from empower.core.networkport import NetworkPort
 from empower.core.vap import VAP
@@ -266,14 +269,72 @@ class LVAPPConnection:
         wtp.last_seen = hello.seq
         wtp.last_seen_ts = time.time()
 
-    def _handle_wadrr_ttime(self, wtp, wadrr_ttime):
+    def send_wadrr_request(self, wtp, ssid):
 
-        print(wadrr_ttime)
+        print("Inside send WADRR request")
+        print(ssid)
+        #print(wtp.addr)
 
-        ssid = SSID(wadrr_ttime.ssid)
+        if ssid not in RUNTIME.tenants:
+            self.log.info("Tenant %s not found", ssid)
+            return
 
-        LOG.info("Transmission Time for tenant: %s WTP: %s ttime: %u seq %u", ssid, wtp.addr, wadrr_ttime.ttimes,
-                 wadrr_ttime.seq)
+        tenant = RUNTIME.tenants[ssid]
+
+        print(tenant)
+
+        if wtp not in tenant.wtps:
+            self.log.info("WTP %s not found", wtp)
+            return
+
+        print(wtp)
+
+        wtps = tenant.wtps[wtp]
+
+        print(wtps)
+
+        if not wtps.connection or wtps.connection.stream.closed():
+            self.log.info("WTP %s not connected", lvap.wtps.addr)
+            return
+
+        wadrr_request = Container(version=PT_VERSION,
+                                 type=PT_WADRR_REQUEST,
+                                 length=10+len(tenant.tenant_name.to_raw()),
+                                 seq=wtps.seq,
+                                 ssid=tenant.tenant_name.to_raw())
+
+        LOG.info("Sending wadrr request to %s", wtps.addr)
+
+        msg = WADRR_REQUEST.build(wadrr_request)
+        wtps.connection.stream.write(msg)
+
+
+    def _handle_wadrr_response(self, wtp, wadrr_response):
+
+
+        print("handle_response")
+        print(wadrr_response)
+
+        ssid = SSID(wadrr_response.ssid)
+
+        #print(ssid)
+
+        for tenant in RUNTIME.tenants.values():
+            if (ssid.to_raw() == tenant.tenant_name.to_raw()):
+                break
+
+        #print(tenant)
+
+        wtps = tenant.wtps[wtp.addr]
+
+        #print("wtps")   
+        #print(wtps)
+
+        wtps.response[ssid] = wadrr_response.ttimes
+
+        LOG.info("Transmission Time for tenant: %s WTP: %s ttime: %u seq %u", ssid, wtp.addr, wadrr_response.ttimes,
+                 wadrr_response.seq)
+
 
     def send_vaps(self):
         """Send VAPs configurations.

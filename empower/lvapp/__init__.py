@@ -58,7 +58,8 @@ PT_DEL_LVAP_RESPONSE = 0x52
 PT_LVAP_STATUS_REQ = 0x53
 PT_VAP_STATUS_REQ = 0x54
 PT_PORT_STATUS_REQ = 0x55
-PT_WADRR_TTIME = 0x57
+PT_WADRR_REQUEST = 0x56
+PT_WADRR_RESPONSE = 0x57
 
 
 HEADER = Struct("header", UBInt8("version"),
@@ -75,7 +76,13 @@ HELLO = Struct("hello", UBInt8("version"),
                Bytes("wtp", 6),
                UBInt32("period"))
 
-WADRR_TTIME = Struct("wadrr_ttime", UBInt8("version"),
+WADRR_REQUEST = Struct("wadrr_request", UBInt8("version"),
+                     UBInt8("type"),
+                     UBInt32("length"),
+                     UBInt32("seq"),
+                     Bytes("ssid", lambda ctx: ctx.length - 10))
+
+WADRR_RESPONSE = Struct("wadrr_response", UBInt8("version"),
                	     UBInt8("type"),
                	     UBInt32("length"),
                	     UBInt32("seq"),
@@ -323,7 +330,8 @@ PT_TYPES = {PT_BYE: None,
             PT_STATUS_VAP: STATUS_VAP,
             PT_ADD_LVAP_RESPONSE: ADD_DEL_LVAP_RESPONSE,
             PT_DEL_LVAP_RESPONSE: ADD_DEL_LVAP_RESPONSE,
-            PT_WADRR_TTIME: WADRR_TTIME}
+            PT_WADRR_RESPONSE: WADRR_RESPONSE,
+            PT_WADRR_REQUEST: WADRR_REQUEST}
 
 PT_TYPES_HANDLERS = {PT_BYE: [],
                      PT_REGISTER: [],
@@ -346,5 +354,6 @@ PT_TYPES_HANDLERS = {PT_BYE: [],
                      PT_STATUS_VAP: [],
                      PT_ADD_LVAP_RESPONSE: [],
                      PT_DEL_LVAP_RESPONSE: [],
-                     PT_WADRR_TTIME: []
+                     PT_WADRR_RESPONSE: [],
+                     PT_WADRR_REQUEST: []
                      }
