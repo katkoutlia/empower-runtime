@@ -330,7 +330,7 @@ class LVAPPConnection:
         #print("wtps")   
         #print(wtps)
 
-        wtps.response[ssid] = wadrr_response.ttimes
+        #wtps.response[ssid] = wadrr_response.ttimes
 
         LOG.info("Transmission Time for tenant: %s WTP: %s ttime: %u seq %u", ssid, wtp.addr, wadrr_response.ttimes,
                  wadrr_response.seq)
