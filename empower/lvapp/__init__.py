@@ -90,7 +90,7 @@ WADRR_RESPONSE = Struct("wadrr_response", UBInt8("version"),
                	     UBInt32("period"),
 				             UBInt32("ttimes"),
 				             Bytes("ssid", lambda ctx: ctx.length - 24))
-			   
+		   
 
 PROBE_REQUEST = Struct("probe_request", UBInt8("version"),
                        UBInt8("type"),

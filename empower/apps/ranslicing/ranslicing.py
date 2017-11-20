@@ -45,6 +45,7 @@ class RANSlicing(EmpowerApp):
         self.weights_default = 100
         self.weights = []
         self.times = {}
+        self.time = 0
 
     def loop(self):
         """ Periodic job. """
@@ -53,9 +54,23 @@ class RANSlicing(EmpowerApp):
 
         for wtp in RUNTIME.wtps:
             #print(wtp)
-            #print("-------------------tenant", self.tenant_id)
             LVAPPConnection.send_wadrr_request(self, wtp, self.tenant_id)
-            #self.times.update({ssid : wtp.response[ssid]})
+            print("took times")
+
+            self.get_time()
+
+    def get_time(self):
+
+     for wtp in RUNTIME.wtps:    
+        for tenant_id in RUNTIME.tenants:
+            tenant = RUNTIME.tenants[tenant_id]
+            if(self.tenant_id == tenant_id):
+                print("tenants equal")
+                print(tenant.tenant_name)
+                self.time = RUNTIME.wtps[wtp].response[tenant.tenant_name]
+                print(self.time)
+
+
 
 
 def launch(tenant_id, every=5000):

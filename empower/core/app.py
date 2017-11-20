@@ -238,7 +238,21 @@ class EmpowerApp:
 
         lvnf.start()
 
+
         # the LVNF is added to the list because in this way its state is
         # maintained as spawning, then as a result of the lvnf status message
         # this can change to running or stopped.
         tenant.lvnfs[lvnf_id] = lvnf
+    '''
+    def set_wadrr_times(self, wadrr_time):
+        
+        RUNTIME.tenants[self.tenant_id].ttime = wadrr_time
+        print(RUNTIME.tenants[self.tenant_id].ttime)
+        
+    def get_wadrr_times(self):
+        if self.tenant_id not in RUNTIME.tenants:
+            return None
+
+        return RUNTIME.tenants[self.tenant_id].ttime
+    '''
+
