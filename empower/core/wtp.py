@@ -43,6 +43,7 @@ class WTP(BasePNFDev):
         super().__init__(addr, label)
         self.supports = set()
         self.response = dict()
+        self.rx_packets_response = dict()
 
     def to_dict(self):
         """Return a JSON-serializable dictionary representing the CPP."""

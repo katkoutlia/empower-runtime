@@ -326,6 +326,25 @@ class WTPBinCounter(ModulePeriodic):
 
         self.last = time.time()
 
+
+
+        """ Store received packets """
+        if self.tenant_id not in RUNTIME.tenants:
+            self.log.info("Tenant %s not found", self.tenant_id)
+
+        tenant = RUNTIME.tenants[self.tenant_id]
+
+        if self.wtp not in tenant.wtps:
+            self.log.info("WTP %s not found", self.wtp)
+
+        wtps = tenant.wtps[self.wtp]
+
+
+        for lvap in RUNTIME.tenants[self.tenant_id].lvaps:
+            wtps.rx_packets_response[lvap] = self.rx_packets[lvap]
+            print("bincounter stored in wtp response", wtps.rx_packets_response[lvap])
+
+
         # call callback
         self.handle_callback(self)
 

@@ -26,7 +26,7 @@ from empower.main import RUNTIME
 
 
 class RANSlicing(EmpowerApp):
-    """Application to ask for the transmission times of eacj tenant
+    """Application to request each tenants transmission times and received traffic
     and (soon) to apply the weight algorithm and change the weights for the WADRR.
 
     Command Line Parameters:
@@ -42,36 +42,80 @@ class RANSlicing(EmpowerApp):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
+        self.current_ssid = RUNTIME.tenants[self.tenant_id].tenant_name
+        
+        self.times = {}
+        self.rx_packets = {}
+
+        self.tenant_traffic = {}
+
         self.weights_default = 100
         self.weights = []
-        self.times = {}
-        self.time = 0
 
+        
     def loop(self):
         """ Periodic job. """
 
         print("------- entered loop to call wadrr request --------")
 
         for wtp in RUNTIME.wtps:
-            #print(wtp)
+            
+            """ Request transmission times from the wtp """
             LVAPPConnection.send_wadrr_request(self, wtp, self.tenant_id)
-            print("took times")
 
-            self.get_time()
+            """ Get transmission times for each tenant """
+            self.get_time(wtp)
 
-    def get_time(self):
+            """ Get traffic for each lvap """
+            self.wtp_bin_counter(every=self.every,
+                                 wtp=wtp,
+                                 callback=self.counters_callback)
 
-     for wtp in RUNTIME.wtps:    
-        for tenant_id in RUNTIME.tenants:
-            tenant = RUNTIME.tenants[tenant_id]
+            """ Store traffic for each tenant """
+            self.store_traffic(wtp)
+
+            """ Execute the weight algorithm only for the first tenant of the list """
+            for tenant_id in RUNTIME.tenants:
+                tenant = RUNTIME.tenants[tenant_id]
+                #print(tenant.tenant_name)
+                break
+
             if(self.tenant_id == tenant_id):
-                print("tenants equal")
-                print(tenant.tenant_name)
-                self.time = RUNTIME.wtps[wtp].response[tenant.tenant_name]
-                print(self.time)
+                self.weight_algorithm(wtp, tenant_id)
 
 
+    def get_time(self, wtp):
+      
+        if self.current_ssid in RUNTIME.wtps[wtp].response:
+            self.times[self.current_ssid] = RUNTIME.wtps[wtp].response[self.current_ssid]
+            print(self.times[self.current_ssid])
 
+
+    def store_traffic(self, wtp):
+        #sum traffic of lvaps of this tenant 
+
+        #In every loop I add all the traffic of the LVAPs of this tenant
+        self.tenant_traffic[self.current_ssid] = 0
+
+        for lvap in RUNTIME.tenants[self.tenant_id].lvaps:
+            if lvap in RUNTIME.wtps[wtp].rx_packets_response:
+                for packets in RUNTIME.wtps[wtp].rx_packets_response[lvap]:
+                    self.rx_packets[lvap] = packets
+                    self.tenant_traffic[self.current_ssid] += packets
+
+        print(self.tenant_traffic[self.current_ssid])
+
+
+    def weight_algorithm(self, wtp, tenant_id):
+
+        tenant = RUNTIME.tenants[tenant_id]
+        print("Calculate weights only for tenant:", tenant.tenant_name)
+
+
+    def counters_callback(self, stats):
+        """ New stats available. """
+
+        self.log.info("New counters received from %s" % stats.wtp)
 
 def launch(tenant_id, every=5000):
     return RANSlicing(tenant_id=tenant_id, every=every)

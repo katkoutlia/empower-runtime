@@ -323,13 +323,9 @@ class LVAPPConnection:
             if (ssid.to_raw() == tenant.tenant_name.to_raw()):
                 break
 
-        print(tenant)
+        #print(tenant)
 
         wtps = tenant.wtps[wtp.addr]
-
-        print("wtps")   
-        print(wtps)
-        
         
         wtps.response[ssid] = wadrr_response.ttimes
 
