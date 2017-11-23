@@ -57,6 +57,8 @@ from empower.lvapp import PT_PORT_STATUS_REQ
 from empower.lvapp import PT_WADRR_REQUEST
 from empower.lvapp import PT_WADRR_RESPONSE
 from empower.lvapp import WADRR_REQUEST
+from empower.lvapp import PT_SET_WADRR_WEIGHTS
+from empower.lvapp import SET_WADRR_WEIGHTS
 from empower.core.lvap import LVAP
 from empower.core.networkport import NetworkPort
 from empower.core.vap import VAP
@@ -318,6 +320,39 @@ class LVAPPConnection:
 
         LOG.info("Transmission Time for tenant: %s WTP: %s ttime: %u seq %u", ssid, wtp.addr, wadrr_response.ttimes,
                  wadrr_response.seq)
+
+
+    def send_set_weights(self, wtp, tenant_id, wadrr_weight):
+
+
+        if tenant_id not in RUNTIME.tenants:
+            self.log.info("Tenant %s not found", ssid)
+            return
+
+        tenant = RUNTIME.tenants[tenant_id]
+
+        if wtp not in tenant.wtps:
+            self.log.info("WTP %s not found", wtp)
+            return
+
+        wtps = tenant.wtps[wtp]
+
+        if not wtps.connection or wtps.connection.stream.closed():
+            self.log.info("WTP %s not connected", wtps.addr)
+            return
+
+        set_wadrr_weights = Container(version=PT_VERSION,
+                                 type=PT_SET_WADRR_WEIGHTS,
+                                 length=11+len(tenant.tenant_name.to_raw()),
+                                 seq=wtps.seq,
+                                 weight=wadrr_weight,
+                                 ssid=tenant.tenant_name.to_raw())
+
+        LOG.info("Sending weight request to %s", wtps.addr)
+
+        msg = SET_WADRR_WEIGHTS.build(set_wadrr_weights)
+        wtps.connection.stream.write(msg)
+
 
     def send_vaps(self):
         """Send VAPs configurations.

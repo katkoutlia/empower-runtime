@@ -21,6 +21,7 @@ import time
 
 from empower.core.app import EmpowerApp
 from empower.core.app import DEFAULT_PERIOD
+from empower.lvapp.lvappconnection import LVAPPConnection
 from empower.main import RUNTIME
 
 
@@ -48,8 +49,8 @@ class WeightApp(EmpowerApp):
         self.times = {}
         self.tenant_traffic = {}
 
-        self.weights_default = 100
-        self.weights = {}
+        self.weights_default = 20
+        self.weight = 0
 
         
     def loop(self):
@@ -73,7 +74,10 @@ class WeightApp(EmpowerApp):
                     if lvap in RUNTIME.wtps[wtp].rx_packets_response:
                         self.tenant_traffic[tenant.tenant_name] += RUNTIME.wtps[wtp].rx_packets_response[lvap][0]
 
-                self.log.info("Traffic of tenant %s %d", tenant.tenant_name, self.tenant_traffic[tenant.tenant_name])
+                self.log.info("Traffic of tenant %s %u", tenant.tenant_name, self.tenant_traffic[tenant.tenant_name])
+
+
+                LVAPPConnection.send_set_weights(self, wtp, tenant_id, self.weights_default)
 
 
 def launch(tenant_id, every=7000):
