@@ -271,9 +271,6 @@ class LVAPPConnection:
     
     def send_wadrr_request(self, wtp, ssid):
 
-        #print("Inside send WADRR request")
-        #print(ssid)
-        #print(wtp.addr)
 
         if ssid not in RUNTIME.tenants:
             self.log.info("Tenant %s not found", ssid)
@@ -281,17 +278,11 @@ class LVAPPConnection:
 
         tenant = RUNTIME.tenants[ssid]
 
-        #print(tenant)
-
         if wtp not in tenant.wtps:
             self.log.info("WTP %s not found", wtp)
             return
 
-        #print(wtp)
-
         wtps = tenant.wtps[wtp]
-
-        #print(wtps)
 
         if not wtps.connection or wtps.connection.stream.closed():
             self.log.info("WTP %s not connected", wtps.addr)
@@ -312,26 +303,18 @@ class LVAPPConnection:
     def _handle_wadrr_response(self, wtp, wadrr_response):
 
 
-        print("handle_response")
-        print(wadrr_response)
+        #print("handle_response")
+        #print(wadrr_response)
 
         ssid = SSID(wadrr_response.ssid)
-
-        #print(ssid)
 
         for tenant in RUNTIME.tenants.values():
             if (ssid.to_raw() == tenant.tenant_name.to_raw()):
                 break
 
-        #print(tenant)
-
         wtps = tenant.wtps[wtp.addr]
         
-        wtps.response[ssid] = wadrr_response.ttimes
-
-        print(wtps.response[ssid])
-        print(ssid)
-        
+        wtps.response[ssid] = wadrr_response.ttimes        
 
         LOG.info("Transmission Time for tenant: %s WTP: %s ttime: %u seq %u", ssid, wtp.addr, wadrr_response.ttimes,
                  wadrr_response.seq)
@@ -345,7 +328,7 @@ class LVAPPConnection:
         Args:
             None
         Returns:
-            None
+            None 
         """
 
         for tenant in RUNTIME.tenants.values():

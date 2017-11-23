@@ -343,7 +343,7 @@ class WTPBinCounter(ModulePeriodic):
         for lvap in RUNTIME.tenants[self.tenant_id].lvaps:
             wtps.rx_packets_response[lvap] = self.rx_packets[lvap]
             print("bincounter stored in wtp response", wtps.rx_packets_response[lvap])
-
+            LOG.info("Traffic for LVAP: %s - %u", lvap.addr, wtps.rx_packets_response[lvap])
 
         # call callback
         self.handle_callback(self)
