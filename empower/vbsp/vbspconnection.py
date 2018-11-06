@@ -414,6 +414,7 @@ class VBSPConnection:
         Returns:
             None
         """
+        print(msg)
 
         for raw_entry in msg.options:
 
@@ -516,6 +517,7 @@ class VBSPConnection:
         Returns:
             None
         """
+        print("***** Handling Ran MAC Slice Response *****",msg.dscp)
 
         dscp = DSCP(msg.dscp)
         plmn_id = PLMNID(msg.plmn_id)
@@ -632,11 +634,13 @@ class VBSPConnection:
         Returns:
             None
         """
-
+        
         msg = Container(length=RAN_MAC_SLICE_REQUEST.sizeof(),
                         plmn_id=plmn_id.to_raw(),
                         dscp=dscp.to_raw(),
                         padding=b'\x00\x00\x00')
+
+        print("****Sending Ran Mac Slice Request from Controller to ENB****", dscp)
 
         self.send_message(msg,
                           E_TYPE_SINGLE,
@@ -653,7 +657,8 @@ class VBSPConnection:
         Raises:
             None
         """
-
+        print("Sending ADD Ran Mac Slice Request",slc.dscp)
+        
         sched_id = slc.lte['static-properties']['sched_id']
         rbgs = slc.lte['static-properties']['rbgs']
         rntis = slc.lte['runtime-properties']['rntis']
@@ -677,10 +682,13 @@ class VBSPConnection:
                 if 'rntis' in runtime:
                     rntis = runtime['rntis']
 
+
         msg = Container(plmn_id=slc.tenant.plmn_id.to_raw(),
                         dscp=slc.dscp.to_raw(),
                         padding=b'\x00\x00\x00',
                         options=[])
+
+        #self.send_ran_mac_slice_request(cell.pci, slc.tenant.plmn_id, slc.dscp)
 
         # RBGs
         slice_rbgs = Container(rbgs=rbgs)
@@ -709,6 +717,12 @@ class VBSPConnection:
             opt_rbgs.length + 4 + \
             opt_sched_id.length + 4 + \
             opt_rntis.length + 4
+
+        print("slice_sched_id",slice_sched_id)
+        print("slice_rbgs",slice_rbgs)
+        print("slice_rntis",slice_rntis)
+        print(opcode)
+
 
         self.send_message(msg,
                           E_TYPE_SINGLE,

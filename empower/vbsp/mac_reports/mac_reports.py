@@ -196,6 +196,9 @@ class MACReports(ModuleTrigger):
 
         self.cell.mac_reports = self.results
 
+        print("***** Inside mac reports *****")
+        print(self.cell.mac_reports['dl_prbs_total'])
+
         # call callback
         self.handle_callback(self)
 
